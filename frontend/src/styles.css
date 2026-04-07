@@ -567,3 +567,191 @@ body.light-theme .logout-btn:hover {
   box-shadow: none;
   color: var(--color-coral);
 }
+.page-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(226, 104, 88, 0.2);
+  border-top-color: var(--color-coral);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(139, 66, 82, 0.3);
+}
+
+body.light-theme .profile-header {
+  border-bottom: 1px solid var(--color-rose);
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-coral);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(226, 104, 88, 0.3);
+}
+
+.profile-header h2 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--color-text);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  color: var(--color-coral);
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.profile-cars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profile-car-card {
+  background: var(--color-plum);
+  border: 1px solid rgba(139, 66, 82, 0.4);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+}
+
+body.light-theme .profile-car-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-rose);
+}
+
+.profile-car-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border-color: var(--color-rose);
+}
+
+body.light-theme .profile-car-card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-coral);
+}
+
+.car-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.light-theme .car-card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.car-card-header h4 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--color-text);
+}
+
+.car-year {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  color: var(--color-gray);
+}
+
+body.light-theme .car-year {
+  background: #F4F4F5;
+}
+
+.expenses-section h5 {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  color: var(--color-gray);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.expenses-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.expense-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(39, 44, 73, 0.4);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+body.light-theme .expense-item {
+  background: #F4F4F5;
+}
+
+.expense-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.expense-type {
+  font-weight: 600;
+  color: var(--color-coral);
+}
+
+.expense-desc {
+  font-size: 0.9rem;
+  color: var(--color-gray);
+}
+
+.expense-amount {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.no-expenses, .empty-state {
+  color: var(--color-gray);
+  font-style: italic;
+}
+
+.error-state {
+  text-align: center;
+  color: var(--color-coral);
+  padding: 40px;
+}
