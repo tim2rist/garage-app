@@ -1,0 +1,13 @@
+{
+  "name": "garage-expense-microservices",
+  "version": "1.0.0",
+  "description": "Simple diploma-level microservices project with:\r - Auth Service (register/login/JWT)\r - Garage Service (cars + expenses + S3 images)\r - User/Profile Service (public profile + search)\r - React frontend (Vite-style)\r - PostgreSQL database",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
