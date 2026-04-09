@@ -24,10 +24,32 @@ const LogoutIcon = () => (
   </svg>
 );
 
+const ProfileIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+
+const GarageIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+);
+
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const isHomePage = location.pathname === "/";
+  const currentUserId = localStorage.getItem("publicUserId");
 
   const [isDark, setIsDark] = useState(true);
 
@@ -41,6 +63,7 @@ export default function App() {
 
   function handleLogout() {
     localStorage.removeItem("token");
+    localStorage.removeItem("publicUserId");
     navigate("/");
   }
 
@@ -53,6 +76,7 @@ export default function App() {
           </div>
           
           <nav className="sidebar-nav">
+            {currentUserId && <Link to={`/profile/${currentUserId}`}>My Profile</Link>}
             <Link to="/garage">My Garage</Link>
             <Link to="/search">Search Users</Link>
           </nav>
@@ -85,13 +109,31 @@ export default function App() {
 
       {!isHomePage && (
         <nav className="bottom-nav">
-          <Link to="/garage">Garage</Link>
-          <Link to="/search">Search</Link>
+          {currentUserId && (
+            <Link to={`/profile/${currentUserId}`}>
+              <ProfileIcon />
+              <span>Profile</span>
+            </Link>
+          )}
+          
+          <Link to="/garage">
+            <GarageIcon />
+            <span>Garage</span>
+          </Link>
+          
+          <Link to="/search">
+            <SearchIcon />
+            <span>Search</span>
+          </Link>
+          
           <button className="mobile-icon-btn" onClick={() => setIsDark(!isDark)}>
             {isDark ? <SunIcon /> : <MoonIcon />}
+            <span>Theme</span>
           </button>
+          
           <button className="mobile-icon-btn" onClick={handleLogout}>
             <LogoutIcon />
+            <span>Exit</span>
           </button>
         </nav>
       )}
