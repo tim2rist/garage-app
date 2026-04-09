@@ -47,3 +47,21 @@ router.get("/:carId", authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
+
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleteOp = await pool.query(
+      "DELETE FROM expenses WHERE id = $1 AND car_id IN (SELECT id FROM cars WHERE user_id = $2) RETURNING *",
+      [id, req.user.id]
+    );
+
+    if (deleteOp.rows.length === 0) {
+      return res.status(404).json({ error: "Expense not found or unauthorized" });
+    }
+
+    res.json({ message: "Expense deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});

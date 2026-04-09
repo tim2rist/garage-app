@@ -76,6 +76,21 @@ export default function CarDetailsPage() {
     }
   };
 
+  // ФУНКЦИЯ УДАЛЕНИЯ ЧЕКА
+  const handleDeleteExpense = async (id) => {
+    if (!window.confirm("Delete this expense?")) return;
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(`http://localhost:5000/api/expenses/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) setExpenses(expenses.filter(e => e.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="centered-content" style={{ maxWidth: "1000px" }}>
       <Link to={`/${currentUserId}/garage`} className="back-link">
@@ -83,7 +98,7 @@ export default function CarDetailsPage() {
       </Link>
 
       <div className="car-details-header">
-        <h2 style={{ fontSize: "2.5rem", marginBottom: "32px", color: "#fff" }}>Car Expenses</h2>
+        <h2 style={{ fontSize: "2.5rem", marginBottom: "32px" }}>Car Expenses</h2>
       </div>
 
       <div className="car-details-wrapper">
@@ -151,6 +166,13 @@ export default function CarDetailsPage() {
                     <span style={{ fontSize: "0.85rem", color: "var(--color-gray)" }}>
                       {new Date(exp.expense_date).toLocaleDateString()}
                     </span>
+                    {/* КНОПКА УДАЛЕНИЯ */}
+                    <button 
+                      onClick={() => handleDeleteExpense(exp.id)}
+                      style={{ background: "none", border: "none", color: "var(--color-coral)", cursor: "pointer", padding: 0, marginTop: "8px", width: "fit-content", boxShadow: "none", fontSize: "0.8rem" }}
+                    >
+                      Remove
+                    </button>
                   </div>
                   <div className="expense-amount-large">
                     ${parseFloat(exp.amount).toFixed(2)}

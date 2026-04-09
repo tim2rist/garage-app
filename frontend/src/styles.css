@@ -201,7 +201,7 @@ input, select {
   padding: 16px;
   border-radius: var(--border-radius);
   border: 1px solid rgba(139, 66, 82, 0.5); 
-  background: rgba(0, 0, 0, 0.2); 
+  background-color: rgba(0, 0, 0, 0.2); 
   color: var(--color-text);
   font-size: 1rem;
   transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
@@ -211,13 +211,13 @@ input, select {
 
 input:focus, select:focus {
   border-color: var(--color-coral);
-  background: rgba(0, 0, 0, 0.3); /* При фокусе чуть темнее */
+  background-color: rgba(0, 0, 0, 0.3); 
   box-shadow: 0 0 0 3px rgba(226, 104, 88, 0.2);
 }
 
 body.light-theme input, 
 body.light-theme select {
-  background: #FFFFFF;
+  background-color: #FFFFFF; 
   border: 1px solid var(--color-rose);
   color: var(--color-text);
 }
@@ -417,6 +417,10 @@ body.light-theme .card {
   border-radius: 4px;
   font-family: monospace;
   color: var(--color-coral);
+}
+
+body.light-theme .car-plate {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .back-link {
@@ -646,12 +650,20 @@ body.light-theme .profile-header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+body.light-theme .car-card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 .car-year {
   background: rgba(255, 255, 255, 0.1);
   padding: 4px 12px;
   border-radius: 16px;
   font-size: 0.9rem;
   color: var(--color-gray);
+}
+
+body.light-theme .car-year {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .expenses-list {
@@ -670,6 +682,10 @@ body.light-theme .profile-header {
   background: rgba(39, 44, 73, 0.4);
   padding: 16px;
   border-radius: 8px;
+}
+
+body.light-theme .expense-item {
+  background: #F4F4F5;
 }
 
 .expense-info {

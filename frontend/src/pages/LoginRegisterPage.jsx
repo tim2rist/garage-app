@@ -95,6 +95,7 @@ export default function LoginRegisterPage() {
                 style={{ 
                   flex: 1, 
                   background: loginMethod === "email" ? "var(--color-coral)" : "transparent",
+                  color: loginMethod === "email" ? "#fff" : "var(--color-coral)", /* <-- Добавили цвет текста */
                   border: "1px solid var(--color-coral)",
                   padding: "8px",
                   fontSize: "0.9rem"
@@ -108,6 +109,7 @@ export default function LoginRegisterPage() {
                 style={{ 
                   flex: 1, 
                   background: loginMethod === "id" ? "var(--color-coral)" : "transparent",
+                  color: loginMethod === "id" ? "#fff" : "var(--color-coral)", /* <-- Добавили цвет текста */
                   border: "1px solid var(--color-coral)",
                   padding: "8px",
                   fontSize: "0.9rem"

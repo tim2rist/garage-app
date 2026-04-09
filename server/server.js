@@ -5,6 +5,7 @@ const pool = require("./db");
 const authRoutes = require("./routes/auth");
 const carRoutes = require("./routes/cars");
 const expenseRoutes = require("./routes/expenses"); 
+const profileRoutes = require("./routes/profile");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/cars", carRoutes);
 app.use("/api/expenses", expenseRoutes); 
+app.use("/api/profile", profileRoutes);
 
 app.get("/api/health", async (req, res) => {
   try {
