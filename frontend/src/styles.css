@@ -200,13 +200,19 @@ form {
 input, select {
   padding: 16px;
   border-radius: var(--border-radius);
-  border: 1px solid var(--color-plum);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(139, 66, 82, 0.5); 
+  background: rgba(0, 0, 0, 0.2); 
   color: var(--color-text);
   font-size: 1rem;
   transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
   outline: none;
   width: 100%;
+}
+
+input:focus, select:focus {
+  border-color: var(--color-coral);
+  background: rgba(0, 0, 0, 0.3); /* При фокусе чуть темнее */
+  box-shadow: 0 0 0 3px rgba(226, 104, 88, 0.2);
 }
 
 body.light-theme input, 
@@ -218,12 +224,6 @@ body.light-theme select {
 
 input::placeholder {
   color: var(--color-gray);
-}
-
-input:focus, select:focus {
-  border-color: var(--color-coral);
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(226, 104, 88, 0.2);
 }
 
 select {

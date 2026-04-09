@@ -10,13 +10,14 @@ router.post("/register", async (req, res) => {
     const { email, password, username } = req.body;
     const publicUserId = username || email.split("@")[0];
 
-    const userExists = await pool.query(
-      "SELECT * FROM users WHERE email = $1 OR public_user_id = $2",
-      [email, publicUserId]
-    );
+    const emailCheck = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (emailCheck.rows.length > 0) {
+      return res.status(400).json({ error: "This email is already registered." });
+    }
 
-    if (userExists.rows.length > 0) {
-      return res.status(400).json({ error: "User already exists" });
+    const usernameCheck = await pool.query("SELECT * FROM users WHERE public_user_id = $1", [publicUserId]);
+    if (usernameCheck.rows.length > 0) {
+      return res.status(400).json({ error: "This Username/ID is already taken." });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -40,20 +41,21 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
-      email,
-    ]);
+    const user = await pool.query(
+      "SELECT * FROM users WHERE email = $1 OR public_user_id = $1",
+      [identifier]
+    );
 
     if (user.rows.length === 0) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res.status(400).json({ error: "User not found" });
     }
 
     const isMatch = await bcrypt.compare(password, user.rows[0].password_hash);
 
     if (!isMatch) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res.status(400).json({ error: "Incorrect password" });
     }
 
     const token = jwt.sign({ id: user.rows[0].id }, process.env.JWT_SECRET, {

@@ -3,25 +3,67 @@ import { useNavigate } from "react-router-dom";
 
 export default function LoginRegisterPage() {
   const [isLogin, setIsLogin] = useState(true);
+  
+  const [loginMethod, setLoginMethod] = useState("email");
+  const [loginId, setLoginId] = useState(""); 
+  const [loginEmail, setLoginEmail] = useState("");
+  
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   
   const navigate = useNavigate();
+
+  const isValidEmail = (emailStr) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(emailStr);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage("");
     
+    if (!isLogin && !isValidEmail(email)) {
+      setErrorMessage("Please enter a valid full email address.");
+      setIsLoading(false);
+      return;
+    }
+    
+    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+    
+    let payload;
+    if (isLogin) {
+      payload = { 
+        identifier: loginMethod === "email" ? loginEmail : loginId, 
+        password 
+      };
+    } else {
+      payload = { email, password, username };
+    }
+
     try {
-      setTimeout(() => {
-        localStorage.setItem("token", "dummy_token");
-        localStorage.setItem("publicUserId", username || email.split('@')[0]);
-        navigate("/garage");
-      }, 800);
+      const response = await fetch(`http://localhost:5000${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Authentication failed");
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("publicUserId", data.publicUserId);
+      navigate("/garage");
     } catch (error) {
-      console.error("Auth failed", error);
+      setErrorMessage(error.message);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -39,24 +81,82 @@ export default function LoginRegisterPage() {
             {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
           
+          {errorMessage && (
+            <div className="status-message" style={{ marginBottom: "16px", borderColor: "var(--color-coral)", color: "var(--color-coral)", background: "transparent" }}>
+              {errorMessage}
+            </div>
+          )}
+          
+          {isLogin && (
+            <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+              <button 
+                type="button" 
+                onClick={() => setLoginMethod("email")}
+                style={{ 
+                  flex: 1, 
+                  background: loginMethod === "email" ? "var(--color-coral)" : "transparent",
+                  border: "1px solid var(--color-coral)",
+                  padding: "8px",
+                  fontSize: "0.9rem"
+                }}
+              >
+                Email
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setLoginMethod("id")}
+                style={{ 
+                  flex: 1, 
+                  background: loginMethod === "id" ? "var(--color-coral)" : "transparent",
+                  border: "1px solid var(--color-coral)",
+                  padding: "8px",
+                  fontSize: "0.9rem"
+                }}
+              >
+                Public ID
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="column-form auth-form">
-            {!isLogin && (
-              <input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
+            {!isLogin ? (
+              <>
+                <input
+                  type="text"
+                  placeholder="Username (Public ID)"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder="Email address (e.g. user@gmail.com)"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </>
+            ) : (
+              <>
+                {loginMethod === "email" ? (
+                  <input
+                    type="email"
+                    placeholder="Enter your Email"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    required
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Enter your Public ID"
+                    value={loginId}
+                    onChange={(e) => setLoginId(e.target.value)}
+                    required
+                  />
+                )}
+              </>
             )}
-            
-            <input
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
             
             <input
               type="password"
@@ -77,7 +177,11 @@ export default function LoginRegisterPage() {
               <button 
                 type="button" 
                 className="toggle-link-btn"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setErrorMessage("");
+                  setPassword("");
+                }}
               >
                 {isLogin ? "Register here" : "Login here"}
               </button>
