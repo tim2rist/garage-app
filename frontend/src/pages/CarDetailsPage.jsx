@@ -11,6 +11,10 @@ export default function CarDetailsPage() {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [expenseDate, setExpenseDate] = useState("");
+  
+  const [receipt, setReceipt] = useState(null);
+  const [preview, setPreview] = useState(null);
+  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,12 +33,20 @@ export default function CarDetailsPage() {
           setExpenses(data);
         }
       } catch (err) {
-        console.error("Failed to fetch expenses:", err);
+        console.error(err);
       }
     };
 
     fetchExpenses();
   }, [carId, navigate]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setReceipt(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleAddExpense = async (e) => {
     e.preventDefault();
@@ -43,20 +55,24 @@ export default function CarDetailsPage() {
 
     const token = localStorage.getItem("token");
 
+    const formData = new FormData();
+    formData.append("car_id", carId);
+    formData.append("expense_type", expenseType);
+    formData.append("amount", amount);
+    formData.append("description", description);
+    formData.append("expense_date", expenseDate || new Date().toISOString().split('T')[0]);
+    
+    if (receipt) {
+      formData.append("receipt", receipt);
+    }
+
     try {
       const response = await fetch("http://localhost:5000/api/expenses", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({
-          car_id: carId,
-          expense_type: expenseType,
-          amount: parseFloat(amount),
-          description,
-          expense_date: expenseDate || new Date().toISOString().split('T')[0]
-        })
+        body: formData
       });
 
       if (!response.ok) {
@@ -66,9 +82,12 @@ export default function CarDetailsPage() {
 
       const newExp = await response.json();
       setExpenses([newExp, ...expenses]);
+      
       setAmount("");
       setDescription("");
       setExpenseDate("");
+      setReceipt(null);
+      setPreview(null);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -76,7 +95,6 @@ export default function CarDetailsPage() {
     }
   };
 
-  // ФУНКЦИЯ УДАЛЕНИЯ ЧЕКА
   const handleDeleteExpense = async (id) => {
     if (!window.confirm("Delete this expense?")) return;
     const token = localStorage.getItem("token");
@@ -123,7 +141,7 @@ export default function CarDetailsPage() {
             <input 
               type="number" 
               step="0.01"
-              placeholder="Amount (e.g. 50.00)" 
+              placeholder="Amount (e.g. 50.00 zł)" 
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required 
@@ -143,9 +161,30 @@ export default function CarDetailsPage() {
               required
             />
             
-            <button type="button" className="file-input-button" style={{ marginTop: "8px", marginBottom: "8px" }}>
-              Upload Receipt/Image
-            </button>
+            <div className="file-input-wrapper">
+              <input 
+                type="file" 
+                id="receipt-upload"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <label htmlFor="receipt-upload" className="file-input-button" style={{ marginTop: "8px", marginBottom: "8px" }}>
+                {receipt ? "Change Image" : "Upload Receipt/Image"}
+              </label>
+            </div>
+
+            {preview && (
+              <div className="image-preview-container">
+                <img src={preview} alt="Receipt preview" className="image-preview" />
+                <button 
+                  type="button" 
+                  className="remove-image-btn" 
+                  onClick={() => { setReceipt(null); setPreview(null); }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
             
             <button type="submit" disabled={isLoading}>
               {isLoading ? "Adding..." : "Add Expense"}
@@ -163,19 +202,31 @@ export default function CarDetailsPage() {
                   <div className="expense-info">
                     <span className="expense-type-badge">{exp.expense_type}</span>
                     <p style={{ margin: "8px 0 4px 0", fontWeight: "500" }}>{exp.description || "No description"}</p>
-                    <span style={{ fontSize: "0.85rem", color: "var(--color-gray)" }}>
+                    <span style={{ fontSize: "0.85rem", color: "var(--color-gray)", display: "block", marginBottom: "8px" }}>
                       {new Date(exp.expense_date).toLocaleDateString()}
                     </span>
-                    {/* КНОПКА УДАЛЕНИЯ */}
+                    
+                    {exp.image_url && (
+                      <a 
+                        href={`http://localhost:5000${exp.image_url}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="expense-image-btn"
+                        style={{ display: "inline-flex", width: "fit-content", marginBottom: "8px" }}
+                      >
+                        🖼️ View Receipt
+                      </a>
+                    )}
+
                     <button 
                       onClick={() => handleDeleteExpense(exp.id)}
-                      style={{ background: "none", border: "none", color: "var(--color-coral)", cursor: "pointer", padding: 0, marginTop: "8px", width: "fit-content", boxShadow: "none", fontSize: "0.8rem" }}
+                      style={{ background: "none", border: "none", color: "var(--color-coral)", cursor: "pointer", padding: 0, width: "fit-content", boxShadow: "none", fontSize: "0.8rem" }}
                     >
                       Remove
                     </button>
                   </div>
                   <div className="expense-amount-large">
-                    ${parseFloat(exp.amount).toFixed(2)}
+                    {parseFloat(exp.amount).toFixed(2)} zł
                   </div>
                 </div>
               ))}

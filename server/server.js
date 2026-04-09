@@ -1,10 +1,11 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 const pool = require("./db");
 const authRoutes = require("./routes/auth");
 const carRoutes = require("./routes/cars");
-const expenseRoutes = require("./routes/expenses"); 
+const expenseRoutes = require("./routes/expenses");
 const profileRoutes = require("./routes/profile");
 
 const app = express();
@@ -12,9 +13,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/cars", carRoutes);
-app.use("/api/expenses", expenseRoutes); 
+app.use("/api/expenses", expenseRoutes);
 app.use("/api/profile", profileRoutes);
 
 app.get("/api/health", async (req, res) => {
