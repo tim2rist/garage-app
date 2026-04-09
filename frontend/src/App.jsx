@@ -33,7 +33,7 @@ const ProfileIcon = () => (
 
 const GarageIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2z"/>
     <polyline points="9 22 9 12 15 12 15 22"/>
   </svg>
 );
@@ -49,7 +49,7 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const isHomePage = location.pathname === "/";
-  const currentUserId = localStorage.getItem("publicUserId");
+  const currentUserId = localStorage.getItem("publicUserId") || "user";
 
   const [isDark, setIsDark] = useState(true);
 
@@ -76,8 +76,8 @@ export default function App() {
           </div>
           
           <nav className="sidebar-nav">
-            {currentUserId && <Link to={`/profile/${currentUserId}`}>My Profile</Link>}
-            <Link to="/garage">My Garage</Link>
+            {currentUserId !== "user" && <Link to={`/profile/${currentUserId}`}>My Profile</Link>}
+            <Link to={`/${currentUserId}/garage`}>My Garage</Link>
             <Link to="/search">Search Users</Link>
           </nav>
 
@@ -99,7 +99,7 @@ export default function App() {
         <div className="container">
           <Routes>
             <Route path="/" element={<LoginRegisterPage />} />
-            <Route path="/garage" element={<GaragePage />} />
+            <Route path="/:userId/garage" element={<GaragePage />} />
             <Route path="/cars/:carId" element={<CarDetailsPage />} />
             <Route path="/search" element={<SearchUserPage />} />
             <Route path="/profile/:publicUserId" element={<ProfilePage />} />
@@ -109,14 +109,14 @@ export default function App() {
 
       {!isHomePage && (
         <nav className="bottom-nav">
-          {currentUserId && (
+          {currentUserId !== "user" && (
             <Link to={`/profile/${currentUserId}`}>
               <ProfileIcon />
               <span>Profile</span>
             </Link>
           )}
           
-          <Link to="/garage">
+          <Link to={`/${currentUserId}/garage`}>
             <GarageIcon />
             <span>Garage</span>
           </Link>

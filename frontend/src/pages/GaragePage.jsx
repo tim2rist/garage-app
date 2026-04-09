@@ -1,36 +1,82 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function GaragePage() {
-  const [cars, setCars] = useState([
-    { id: "1", make: "Toyota", model: "Corolla", year: 2020, plate: "AB123CD" },
-    { id: "2", make: "Honda", model: "Civic", year: 2018, plate: "XX999YY" }
-  ]);
-  const [make, setMake] = useState("");
+  const [cars, setCars] = useState([]);
+  const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
   const [plate, setPlate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  
+  const navigate = useNavigate();
 
-  const handleAddCar = (e) => {
+  useEffect(() => {
+    const fetchCars = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/");
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:5000/api/cars", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch cars");
+        
+        const data = await response.json();
+        setCars(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCars();
+  }, [navigate]);
+
+  const handleAddCar = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
     
-    setTimeout(() => {
-      const newCar = {
-        id: Date.now().toString(),
-        make,
-        model,
-        year,
-        plate
-      };
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch("http://localhost:5000/api/cars", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          brand,
+          model,
+          year: parseInt(year),
+          plate_number: plate
+        })
+      });
+
+      const newCar = await response.json();
+
+      if (!response.ok) {
+        throw new Error(newCar.error || "Failed to add car");
+      }
+
       setCars([newCar, ...cars]);
-      setMake("");
+      setBrand("");
       setModel("");
       setYear("");
       setPlate("");
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   return (
@@ -39,12 +85,18 @@ export default function GaragePage() {
         <div className="card add-car-card">
           <h3 className="add-car-title">Add New Vehicle</h3>
           
+          {error && (
+            <div className="status-message" style={{ marginBottom: "16px", borderColor: "var(--color-coral)", color: "var(--color-coral)", background: "transparent" }}>
+              {error}
+            </div>
+          )}
+          
           <form onSubmit={handleAddCar} className="column-form auth-form">
             <input
               type="text"
               placeholder="Brand (e.g., Toyota)"
-              value={make}
-              onChange={(e) => setMake(e.target.value)}
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
               required
             />
             
@@ -89,10 +141,10 @@ export default function GaragePage() {
           {cars.map((car) => (
             <div key={car.id} className="car-grid-item">
               <Link to={`/cars/${car.id}`}>
-                <h3 className="car-title">{car.make} {car.model}</h3>
+                <h3 className="car-title">{car.brand} {car.model}</h3>
                 <div className="car-details">
                   <span className="car-year">{car.year}</span>
-                  <span className="car-plate">{car.plate}</span>
+                  <span className="car-plate">{car.plate_number}</span>
                 </div>
               </Link>
             </div>

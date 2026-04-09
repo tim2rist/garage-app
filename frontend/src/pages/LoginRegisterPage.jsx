@@ -60,7 +60,7 @@ export default function LoginRegisterPage() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("publicUserId", data.publicUserId);
-      navigate("/garage");
+      navigate(`/profile/${data.publicUserId}`);
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
