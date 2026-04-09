@@ -1,89 +1,107 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { authHeader, garageApi } from "../api";
 
 export default function GaragePage() {
-  const [cars, setCars] = useState([]);
-  const [form, setForm] = useState({ brand: "", model: "", year: "", plateNumber: "" });
+  const [cars, setCars] = useState([
+    { id: "1", make: "Toyota", model: "Corolla", year: 2020, plate: "AB123CD" },
+    { id: "2", make: "Honda", model: "Civic", year: 2018, plate: "XX999YY" }
+  ]);
+  const [make, setMake] = useState("");
+  const [model, setModel] = useState("");
+  const [year, setYear] = useState("");
+  const [plate, setPlate] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  async function loadCars() {
-    try {
-      const { data } = await garageApi.get("/cars", { headers: authHeader() });
-      setCars(data);
-    } catch (error) {
-      console.error("Failed to load cars", error);
-    }
-  }
-
-  useEffect(() => {
-    loadCars();
-  }, []);
-
-  async function addCar(e) {
+  const handleAddCar = (e) => {
     e.preventDefault();
-    try {
-      await garageApi.post("/cars", form, { headers: authHeader() });
-      setForm({ brand: "", model: "", year: "", plateNumber: "" });
-      loadCars();
-    } catch (error) {
-      console.error("Failed to add car", error);
-    }
-  }
+    setIsLoading(true);
+    
+    setTimeout(() => {
+      const newCar = {
+        id: Date.now().toString(),
+        make,
+        model,
+        year,
+        plate
+      };
+      setCars([newCar, ...cars]);
+      setMake("");
+      setModel("");
+      setYear("");
+      setPlate("");
+      setIsLoading(false);
+    }, 500);
+  };
 
   return (
-    <div>
-      <div className="garage-header">
-        <h2>My Garage</h2>
-      </div>
-
-      <div className="card add-car-card">
-        <h3 className="add-car-title">Add New Vehicle</h3>
-        <form onSubmit={addCar} className="row-form">
-          <input 
-            placeholder="Brand" 
-            required
-            value={form.brand} 
-            onChange={(e) => setForm({ ...form, brand: e.target.value })} 
-          />
-          <input 
-            placeholder="Model" 
-            required
-            value={form.model} 
-            onChange={(e) => setForm({ ...form, model: e.target.value })} 
-          />
-          <input 
-            placeholder="Year" 
-            type="number"
-            value={form.year} 
-            onChange={(e) => setForm({ ...form, year: e.target.value })} 
-          />
-          <input 
-            placeholder="Plate number" 
-            value={form.plateNumber} 
-            onChange={(e) => setForm({ ...form, plateNumber: e.target.value })} 
-          />
-          <button type="submit">Add Car</button>
-        </form>
-      </div>
-
-      {cars.length === 0 ? (
-        <div style={{ textAlign: "center", color: "var(--color-gray)", padding: "40px" }}>
-          <p>Your garage is empty. Add a car above.</p>
+    <div className="garage-page-wrapper">
+      <div className="add-car-section">
+        <div className="card add-car-card">
+          <h3 className="add-car-title">Add New Vehicle</h3>
+          
+          <form onSubmit={handleAddCar} className="column-form auth-form">
+            <input
+              type="text"
+              placeholder="Brand (e.g., Toyota)"
+              value={make}
+              onChange={(e) => setMake(e.target.value)}
+              required
+            />
+            
+            <input
+              type="text"
+              placeholder="Model (e.g., Corolla)"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              required
+            />
+            
+            <div className="grid-2">
+              <input
+                type="number"
+                placeholder="Year"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Plate Number"
+                value={plate}
+                onChange={(e) => setPlate(e.target.value)}
+                required
+              />
+            </div>
+            
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? "Adding..." : "Add Car"}
+            </button>
+          </form>
         </div>
-      ) : (
-        <ul className="car-grid">
+      </div>
+
+      <div className="garage-header">
+        <h2>My Vehicles</h2>
+      </div>
+
+      {cars.length > 0 ? (
+        <div className="car-grid">
           {cars.map((car) => (
-            <li key={car.id} className="car-grid-item">
+            <div key={car.id} className="car-grid-item">
               <Link to={`/cars/${car.id}`}>
-                <h4 className="car-title">{car.brand} {car.model}</h4>
+                <h3 className="car-title">{car.make} {car.model}</h3>
                 <div className="car-details">
-                  <span>Year: {car.year || "N/A"}</span>
-                  {car.plateNumber && <span className="car-plate">{car.plateNumber}</span>}
+                  <span className="car-year">{car.year}</span>
+                  <span className="car-plate">{car.plate}</span>
                 </div>
               </Link>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
+      ) : (
+        <div className="empty-state">
+          <p>Your garage is empty. Add your first car above.</p>
+        </div>
       )}
     </div>
   );

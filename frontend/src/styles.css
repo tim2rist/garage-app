@@ -853,6 +853,11 @@ body.light-theme .user-card {
     border-top: 1px solid var(--color-rose);
   }
 
+  .bottom-nav a span,
+  .bottom-nav .mobile-icon-btn span {
+    display: none;
+  }
+
   .bottom-nav a, .mobile-icon-btn {
     flex: 1;
     color: var(--color-gray);
@@ -904,9 +909,90 @@ body.light-theme .user-card {
 
   .search-box {
     flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .search-input-wrapper {
+    width: 100%;
   }
 
   .search-btn {
-    width: 100% !important;
+    width: auto !important;
+    min-width: 150px;
+    padding: 14px 32px !important;
   }
+}
+
+.auth-card-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+}
+
+.auth-form {
+  max-width: 100%;
+}
+
+.auth-toggle {
+  text-align: center;
+  margin-top: 24px;
+  color: var(--color-gray);
+  font-size: 0.95rem;
+}
+
+.toggle-link-btn {
+  background: none;
+  border: none;
+  color: var(--color-coral);
+  padding: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: none;
+  width: auto;
+  display: inline;
+  transition: color var(--transition-fast);
+}
+
+.toggle-link-btn:hover {
+  background: none;
+  color: #f07464;
+  transform: none;
+  box-shadow: none;
+  text-decoration: underline;
+}
+
+body.light-theme .toggle-link-btn {
+  color: var(--color-coral);
+}
+
+.garage-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.add-car-section {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 48px;
+}
+
+.add-car-card {
+  width: 100%;
+  max-width: 500px;
+  margin: 0;
+}
+
+.add-car-card .grid-2 {
+  gap: 16px;
+  margin-bottom: 0;
 }
