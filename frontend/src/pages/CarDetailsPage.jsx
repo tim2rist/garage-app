@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
 export default function CarDetailsPage() {
   const { carId } = useParams();
@@ -19,6 +20,14 @@ export default function CarDetailsPage() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const COLORS = {
+    Fuel: "#FF6B6B",
+    Service: "#4ECDC4",
+    Insurance: "#45B7D1",
+    Parts: "#96CEB4",
+    Other: "#F9A826"
+  };
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -110,6 +119,35 @@ export default function CarDetailsPage() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const chartData = Object.entries(
+    expenses.reduce((acc, exp) => {
+      acc[exp.expense_type] = (acc[exp.expense_type] || 0) + parseFloat(exp.amount);
+      return acc;
+    }, {})
+  ).map(([name, value]) => ({ name, value }));
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div style={{
+          backgroundColor: "#1e1e2e",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          padding: "12px",
+          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)"
+        }}>
+          <p style={{ margin: 0, color: "#a6a6b5", fontSize: "0.85rem", marginBottom: "4px" }}>
+            {payload[0].name}
+          </p>
+          <p style={{ margin: 0, color: "#ffffff", fontWeight: "bold", fontSize: "1.1rem" }}>
+            {parseFloat(payload[0].value).toFixed(2)} zł
+          </p>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -208,53 +246,84 @@ export default function CarDetailsPage() {
           </div>
         )}
 
-        <div className="expense-history-section">
-          <h3 style={{ color: "var(--color-coral)", fontSize: "1.5rem", marginTop: 0, marginBottom: "24px" }}>History</h3>
-          
-          {expenses.length > 0 ? (
-            <div className="expense-history-list">
-              {expenses.map((exp) => (
-                <div key={exp.id} className="expense-history-item">
-                  <div className="expense-info">
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span className="expense-type-badge">{exp.expense_type}</span>
-                      {!exp.is_public && <span style={{ fontSize: "0.8rem", color: "var(--color-gray)" }}>(Private)</span>}
-                    </div>
-                    <p style={{ margin: "8px 0 4px 0", fontWeight: "500" }}>{exp.description || "No description"}</p>
-                    <span style={{ fontSize: "0.85rem", color: "var(--color-gray)", display: "block", marginBottom: "8px" }}>
-                      {new Date(exp.expense_date).toLocaleDateString()}
-                    </span>
-                    
-                    {exp.image_url && (
-                      <a 
-                        href={`http://localhost:5000${exp.image_url}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="expense-image-btn"
-                        style={{ display: "inline-flex", width: "fit-content", marginBottom: "8px" }}
-                      >
-                        🖼️ View Receipt
-                      </a>
-                    )}
-
-                    {isOwner && (
-                      <button 
-                        onClick={() => handleDeleteExpense(exp.id)}
-                        style={{ background: "none", border: "none", color: "var(--color-coral)", cursor: "pointer", padding: 0, width: "fit-content", boxShadow: "none", fontSize: "0.8rem" }}
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                  <div className="expense-amount-large">
-                    {parseFloat(exp.amount).toFixed(2)} zł
-                  </div>
-                </div>
-              ))}
+        <div className="expense-content-right">
+          {expenses.length > 0 && (
+            <div className="card" style={{ padding: "24px", marginBottom: "24px", background: "var(--color-plum)" }}>
+              <h3 style={{ color: "var(--color-text)", margin: "0 0 16px 0", fontSize: "1.2rem" }}>Expenses Breakdown</h3>
+              <div style={{ width: "100%", height: "250px" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                      stroke="none"
+                      isAnimationActive={false}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[entry.name] || COLORS.Other} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend wrapperStyle={{ color: "#ffffff" }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          ) : (
-            <p style={{ color: "var(--color-text)" }}>No expenses recorded yet.</p>
           )}
+
+          <div className="expense-history-section">
+            <h3 style={{ color: "var(--color-coral)", fontSize: "1.5rem", marginTop: 0, marginBottom: "24px" }}>History</h3>
+            
+            {expenses.length > 0 ? (
+              <div className="expense-history-list">
+                {expenses.map((exp) => (
+                  <div key={exp.id} className="expense-history-item">
+                    <div className="expense-info">
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span className="expense-type-badge">{exp.expense_type}</span>
+                        {!exp.is_public && <span style={{ fontSize: "0.8rem", color: "var(--color-gray)" }}>(Private)</span>}
+                      </div>
+                      <p style={{ margin: "8px 0 4px 0", fontWeight: "500" }}>{exp.description || "No description"}</p>
+                      <span style={{ fontSize: "0.85rem", color: "var(--color-gray)", display: "block", marginBottom: "8px" }}>
+                        {new Date(exp.expense_date).toLocaleDateString()}
+                      </span>
+                      
+                      {exp.image_url && (
+                        <a 
+                          href={`http://localhost:5000${exp.image_url}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="expense-image-btn"
+                          style={{ display: "inline-flex", width: "fit-content", marginBottom: "8px" }}
+                        >
+                          🖼️ View Receipt
+                        </a>
+                      )}
+
+                      {isOwner && (
+                        <button 
+                          onClick={() => handleDeleteExpense(exp.id)}
+                          style={{ background: "none", border: "none", color: "var(--color-coral)", cursor: "pointer", padding: 0, width: "fit-content", boxShadow: "none", fontSize: "0.8rem" }}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <div className="expense-amount-large">
+                      {parseFloat(exp.amount).toFixed(2)} zł
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ color: "var(--color-text)" }}>No expenses recorded yet.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
