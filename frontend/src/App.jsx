@@ -5,6 +5,7 @@ import GaragePage from "./pages/GaragePage";
 import CarDetailsPage from "./pages/CarDetailsPage";
 import SearchUserPage from "./pages/SearchUserPage";
 import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
 
 const SunIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -45,6 +46,13 @@ const SearchIcon = () => (
   </svg>
 );
 
+const SettingsIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+);
+
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -79,6 +87,7 @@ export default function App() {
             {currentUserId !== "user" && <Link to={`/profile/${currentUserId}`}>My Profile</Link>}
             <Link to={`/${currentUserId}/garage`}>My Garage</Link>
             <Link to="/search">Search Users</Link>
+            <Link to="/settings">Settings</Link>
           </nav>
 
           <div className="sidebar-footer">
@@ -103,6 +112,7 @@ export default function App() {
             <Route path="/cars/:carId" element={<CarDetailsPage />} />
             <Route path="/search" element={<SearchUserPage />} />
             <Route path="/profile/:publicUserId" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </div>
       </main>
@@ -124,6 +134,11 @@ export default function App() {
           <Link to="/search">
             <SearchIcon />
             <span>Search</span>
+          </Link>
+
+          <Link to="/settings">
+            <SettingsIcon />
+            <span>Settings</span>
           </Link>
           
           <button className="mobile-icon-btn" onClick={() => setIsDark(!isDark)}>

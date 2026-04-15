@@ -8,12 +8,14 @@ router.get("/stats/:publicUserId", async (req, res) => {
 
     const stats = await pool.query(
       `SELECT 
+        u.avatar_url,
         COUNT(DISTINCT c.id) as car_count, 
         COALESCE(SUM(e.amount), 0) as total_expenses
       FROM users u
       LEFT JOIN cars c ON u.id = c.user_id
       LEFT JOIN expenses e ON c.id = e.car_id
-      WHERE u.public_user_id = $1`,
+      WHERE u.public_user_id = $1
+      GROUP BY u.id, u.avatar_url`,
       [publicUserId]
     );
 
@@ -27,7 +29,7 @@ router.get("/search/:query", async (req, res) => {
   try {
     const { query } = req.params;
     const users = await pool.query(
-      "SELECT public_user_id FROM users WHERE public_user_id ILIKE $1 LIMIT 10",
+      "SELECT public_user_id, avatar_url FROM users WHERE public_user_id ILIKE $1 LIMIT 10",
       [`%${query}%`]
     );
     res.json(users.rows);

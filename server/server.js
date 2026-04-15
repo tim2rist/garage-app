@@ -19,6 +19,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/cars", carRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/settings", require("./routes/settings"));
 
 app.get("/api/health", async (req, res) => {
   try {

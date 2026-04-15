@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 
 export default function ProfilePage() {
   const { publicUserId } = useParams();
-  const [stats, setStats] = useState({ car_count: 0, total_expenses: 0 });
+  const [stats, setStats] = useState({ car_count: 0, total_expenses: 0, avatar_url: null });
   const [cars, setCars] = useState([]);
 
   useEffect(() => {
@@ -12,13 +12,13 @@ export default function ProfilePage() {
         const statsRes = await fetch(`http://localhost:5000/api/profile/stats/${publicUserId}`);
         if (statsRes.ok) {
           const statsData = await statsRes.json();
-          setStats(statsData);
+          setStats(statsData || { car_count: 0, total_expenses: 0, avatar_url: null });
         }
 
         const carsRes = await fetch(`http://localhost:5000/api/profile/cars/${publicUserId}`);
         if (carsRes.ok) {
           const carsData = await carsRes.json();
-          setCars(carsData);
+          setCars(carsData || []);
         }
       } catch (err) {
         console.error(err);
@@ -30,8 +30,16 @@ export default function ProfilePage() {
   return (
     <div className="profile-page">
       <div className="profile-header">
-        <div className="profile-avatar">
-          {publicUserId ? publicUserId.charAt(0).toUpperCase() : "?"}
+        <div className="profile-avatar" style={{ overflow: "hidden", padding: 0 }}>
+          {stats?.avatar_url ? (
+            <img 
+              src={`http://localhost:5000${stats.avatar_url}`} 
+              alt="Avatar" 
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} 
+            />
+          ) : (
+            publicUserId ? publicUserId.charAt(0).toUpperCase() : "?"
+          )}
         </div>
         <div>
           <h2>{publicUserId}</h2>
@@ -44,13 +52,13 @@ export default function ProfilePage() {
         <div className="card" style={{ textAlign: "center" }}>
           <h4 style={{ color: "var(--color-gray)", margin: "0 0 8px 0" }}>Total Vehicles</h4>
           <p style={{ fontSize: "2.5rem", margin: 0, fontWeight: "800", color: "var(--color-coral)" }}>
-            {stats.car_count}
+            {stats?.car_count || 0}
           </p>
         </div>
         <div className="card" style={{ textAlign: "center" }}>
           <h4 style={{ color: "var(--color-gray)", margin: "0 0 8px 0" }}>Total Expenses</h4>
           <p style={{ fontSize: "2.5rem", margin: 0, fontWeight: "800", color: "var(--color-coral)" }}>
-            {parseFloat(stats.total_expenses).toLocaleString()} zł
+            {parseFloat(stats?.total_expenses || 0).toLocaleString()} zł
           </p>
         </div>
       </div>
