@@ -19,7 +19,34 @@ router.get("/stats/:publicUserId", async (req, res) => {
 
     res.json(stats.rows[0]);
   } catch (err) {
-    console.error(err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.get("/search/:query", async (req, res) => {
+  try {
+    const { query } = req.params;
+    const users = await pool.query(
+      "SELECT public_user_id FROM users WHERE public_user_id ILIKE $1 LIMIT 10",
+      [`%${query}%`]
+    );
+    res.json(users.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.get("/cars/:publicUserId", async (req, res) => {
+  try {
+    const { publicUserId } = req.params;
+    const userCars = await pool.query(
+      `SELECT c.* FROM cars c 
+       JOIN users u ON c.user_id = u.id 
+       WHERE u.public_user_id = $1`,
+      [publicUserId]
+    );
+    res.json(userCars.rows);
+  } catch (err) {
     res.status(500).json({ error: "Server error" });
   }
 });

@@ -7,10 +7,12 @@ export default function CarDetailsPage() {
   const currentUserId = localStorage.getItem("publicUserId");
   
   const [expenses, setExpenses] = useState([]);
+  const [isOwner, setIsOwner] = useState(false);
   const [expenseType, setExpenseType] = useState("Fuel");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [expenseDate, setExpenseDate] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
   
   const [receipt, setReceipt] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -21,16 +23,16 @@ export default function CarDetailsPage() {
   useEffect(() => {
     const fetchExpenses = async () => {
       const token = localStorage.getItem("token");
-      if (!token) return navigate("/");
 
       try {
         const response = await fetch(`http://localhost:5000/api/expenses/${carId}`, {
-          headers: { "Authorization": `Bearer ${token}` }
+          headers: token ? { "Authorization": `Bearer ${token}` } : {}
         });
         
         if (response.ok) {
           const data = await response.json();
-          setExpenses(data);
+          setExpenses(data.expenses || []);
+          setIsOwner(data.isOwner || false);
         }
       } catch (err) {
         console.error(err);
@@ -38,7 +40,7 @@ export default function CarDetailsPage() {
     };
 
     fetchExpenses();
-  }, [carId, navigate]);
+  }, [carId]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -61,6 +63,7 @@ export default function CarDetailsPage() {
     formData.append("amount", amount);
     formData.append("description", description);
     formData.append("expense_date", expenseDate || new Date().toISOString().split('T')[0]);
+    formData.append("is_public", isPublic);
     
     if (receipt) {
       formData.append("receipt", receipt);
@@ -111,86 +114,99 @@ export default function CarDetailsPage() {
 
   return (
     <div className="centered-content" style={{ maxWidth: "1000px" }}>
-      <Link to={`/${currentUserId}/garage`} className="back-link">
-        ← Back to Garage
+      <Link to={isOwner ? `/${currentUserId}/garage` : `/search`} className="back-link">
+        ← {isOwner ? "Back to Garage" : "Back to Search"}
       </Link>
 
       <div className="car-details-header">
         <h2 style={{ fontSize: "2.5rem", marginBottom: "32px" }}>Car Expenses</h2>
       </div>
 
-      <div className="car-details-wrapper">
-        <div className="card" style={{ height: "fit-content" }}>
-          <h3 className="add-car-title" style={{ fontWeight: "700", marginBottom: "24px" }}>Add New Expense</h3>
-          
-          {error && <div className="status-message">{error}</div>}
-          
-          <form onSubmit={handleAddExpense} className="column-form">
-            <select 
-              value={expenseType} 
-              onChange={(e) => setExpenseType(e.target.value)}
-              required
-            >
-              <option value="Fuel">Fuel</option>
-              <option value="Service">Service</option>
-              <option value="Insurance">Insurance</option>
-              <option value="Parts">Parts</option>
-              <option value="Other">Other</option>
-            </select>
+      <div className="car-details-wrapper" style={{ gridTemplateColumns: isOwner ? "350px 1fr" : "1fr" }}>
+        {isOwner && (
+          <div className="card" style={{ height: "fit-content" }}>
+            <h3 className="add-car-title" style={{ fontWeight: "700", marginBottom: "24px" }}>Add New Expense</h3>
             
-            <input 
-              type="number" 
-              step="0.01"
-              placeholder="Amount (e.g. 50.00 zł)" 
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required 
-            />
+            {error && <div className="status-message">{error}</div>}
             
-            <input 
-              type="text" 
-              placeholder="Description" 
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-            
-            <input 
-              type="date" 
-              value={expenseDate}
-              onChange={(e) => setExpenseDate(e.target.value)}
-              required
-            />
-            
-            <div className="file-input-wrapper">
+            <form onSubmit={handleAddExpense} className="column-form">
+              <select 
+                value={expenseType} 
+                onChange={(e) => setExpenseType(e.target.value)}
+                required
+              >
+                <option value="Fuel">Fuel</option>
+                <option value="Service">Service</option>
+                <option value="Insurance">Insurance</option>
+                <option value="Parts">Parts</option>
+                <option value="Other">Other</option>
+              </select>
+              
               <input 
-                type="file" 
-                id="receipt-upload"
-                accept="image/*"
-                onChange={handleFileChange}
+                type="number" 
+                step="0.01"
+                placeholder="Amount (e.g. 50.00 zł)" 
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required 
               />
-              <label htmlFor="receipt-upload" className="file-input-button" style={{ marginTop: "8px", marginBottom: "8px" }}>
-                {receipt ? "Change Image" : "Upload Receipt/Image"}
-              </label>
-            </div>
+              
+              <input 
+                type="text" 
+                placeholder="Description" 
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              
+              <input 
+                type="date" 
+                value={expenseDate}
+                onChange={(e) => setExpenseDate(e.target.value)}
+                required
+              />
 
-            {preview && (
-              <div className="image-preview-container">
-                <img src={preview} alt="Receipt preview" className="image-preview" />
-                <button 
-                  type="button" 
-                  className="remove-image-btn" 
-                  onClick={() => { setReceipt(null); setPreview(null); }}
-                >
-                  ✕
-                </button>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "8px 0" }}>
+                <input 
+                  type="checkbox" 
+                  id="isPublic" 
+                  checked={isPublic} 
+                  onChange={(e) => setIsPublic(e.target.checked)} 
+                  style={{ width: "auto" }} 
+                />
+                <label htmlFor="isPublic" style={{ color: "var(--color-text)", fontSize: "0.95rem" }}>Make Public</label>
               </div>
-            )}
-            
-            <button type="submit" disabled={isLoading}>
-              {isLoading ? "Adding..." : "Add Expense"}
-            </button>
-          </form>
-        </div>
+              
+              <div className="file-input-wrapper">
+                <input 
+                  type="file" 
+                  id="receipt-upload"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                <label htmlFor="receipt-upload" className="file-input-button" style={{ marginTop: "8px", marginBottom: "8px" }}>
+                  {receipt ? "Change Image" : "Upload Receipt/Image"}
+                </label>
+              </div>
+
+              {preview && (
+                <div className="image-preview-container">
+                  <img src={preview} alt="Receipt preview" className="image-preview" />
+                  <button 
+                    type="button" 
+                    className="remove-image-btn" 
+                    onClick={() => { setReceipt(null); setPreview(null); }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              
+              <button type="submit" disabled={isLoading}>
+                {isLoading ? "Adding..." : "Add Expense"}
+              </button>
+            </form>
+          </div>
+        )}
 
         <div className="expense-history-section">
           <h3 style={{ color: "var(--color-coral)", fontSize: "1.5rem", marginTop: 0, marginBottom: "24px" }}>History</h3>
@@ -200,7 +216,10 @@ export default function CarDetailsPage() {
               {expenses.map((exp) => (
                 <div key={exp.id} className="expense-history-item">
                   <div className="expense-info">
-                    <span className="expense-type-badge">{exp.expense_type}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span className="expense-type-badge">{exp.expense_type}</span>
+                      {!exp.is_public && <span style={{ fontSize: "0.8rem", color: "var(--color-gray)" }}>(Private)</span>}
+                    </div>
                     <p style={{ margin: "8px 0 4px 0", fontWeight: "500" }}>{exp.description || "No description"}</p>
                     <span style={{ fontSize: "0.85rem", color: "var(--color-gray)", display: "block", marginBottom: "8px" }}>
                       {new Date(exp.expense_date).toLocaleDateString()}
@@ -218,12 +237,14 @@ export default function CarDetailsPage() {
                       </a>
                     )}
 
-                    <button 
-                      onClick={() => handleDeleteExpense(exp.id)}
-                      style={{ background: "none", border: "none", color: "var(--color-coral)", cursor: "pointer", padding: 0, width: "fit-content", boxShadow: "none", fontSize: "0.8rem" }}
-                    >
-                      Remove
-                    </button>
+                    {isOwner && (
+                      <button 
+                        onClick={() => handleDeleteExpense(exp.id)}
+                        style={{ background: "none", border: "none", color: "var(--color-coral)", cursor: "pointer", padding: 0, width: "fit-content", boxShadow: "none", fontSize: "0.8rem" }}
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                   <div className="expense-amount-large">
                     {parseFloat(exp.amount).toFixed(2)} zł

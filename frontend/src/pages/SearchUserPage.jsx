@@ -29,12 +29,17 @@ export default function SearchUserPage() {
     setHasSearched(true);
 
     try {
-      setTimeout(() => {
-        setUsers([{ publicUserId: searchTerm, username: "Garage Owner" }]);
-        setIsSearching(false);
-      }, 500);
+      const res = await fetch(`http://localhost:5000/api/profile/search/${searchTerm}`);
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data);
+      } else {
+        setUsers([]);
+      }
     } catch (error) {
+      console.error(error);
       setUsers([]);
+    } finally {
       setIsSearching(false);
     }
   }
@@ -67,15 +72,15 @@ export default function SearchUserPage() {
           {users.length > 0 ? (
             <div className="users-grid">
               {users.map((user) => (
-                <div key={user.publicUserId} className="user-card">
+                <div key={user.public_user_id} className="user-card">
                   <div className="user-card-avatar">
                     <UserIcon />
                   </div>
                   <div className="user-card-info">
-                    <h3>{user.username || user.publicUserId}</h3>
+                    <h3>{user.public_user_id}</h3>
                     <span className="user-role">Public Profile</span>
                   </div>
-                  <Link to={`/profile/${user.publicUserId}`} className="view-profile-btn">
+                  <Link to={`/profile/${user.public_user_id}`} className="view-profile-btn">
                     View Garage
                   </Link>
                 </div>
