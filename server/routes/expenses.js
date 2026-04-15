@@ -78,6 +78,41 @@ router.get("/:carId", async (req, res) => {
   }
 });
 
+router.put("/:id", authMiddleware, upload.single("receipt"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { expense_type, amount, description, expense_date, is_public } = req.body;
+
+    const expenseCheck = await pool.query(
+      "SELECT e.* FROM expenses e JOIN cars c ON e.car_id = c.id WHERE e.id = $1 AND c.user_id = $2",
+      [id, req.user.id]
+    );
+
+    if (expenseCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Expense not found or unauthorized" });
+    }
+
+    let imageUrl = expenseCheck.rows[0].image_url;
+
+    if (req.file) {
+      imageUrl = `/uploads/${req.file.filename}`;
+      if (expenseCheck.rows[0].image_url) {
+        const oldPath = path.join(__dirname, "..", expenseCheck.rows[0].image_url);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+    }
+
+    const updatedExpense = await pool.query(
+      "UPDATE expenses SET expense_type = $1, amount = $2, description = $3, expense_date = $4, is_public = $5, image_url = $6 WHERE id = $7 RETURNING *",
+      [expense_type, amount, description, expense_date, is_public === "true" || is_public === true, imageUrl, id]
+    );
+
+    res.json(updatedExpense.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
