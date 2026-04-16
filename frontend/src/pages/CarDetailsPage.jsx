@@ -2,6 +2,33 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
+const PencilIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 20h9"></path>
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+  </svg>
+);
+
+const XIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+
+const PaperclipIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+  </svg>
+);
+
 export default function CarDetailsPage() {
   const { carId } = useParams();
   const navigate = useNavigate();
@@ -18,7 +45,10 @@ export default function CarDetailsPage() {
   const [receipt, setReceipt] = useState(null);
   const [preview, setPreview] = useState(null);
 
+  const [filterType, setFilterType] = useState("All");
+  const [dateFilter, setDateFilter] = useState("All");
   const [editingExpense, setEditingExpense] = useState(null);
+  const [viewingImage, setViewingImage] = useState(null);
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -33,6 +63,17 @@ export default function CarDetailsPage() {
 
   useEffect(() => {
     fetchExpenses();
+
+    const container = document.querySelector('.container');
+    if (container) {
+      container.style.setProperty('max-width', '1400px', 'important');
+    }
+
+    return () => {
+      if (container) {
+        container.style.removeProperty('max-width');
+      }
+    };
   }, [carId]);
 
   const fetchExpenses = async () => {
@@ -146,8 +187,27 @@ export default function CarDetailsPage() {
     setPreview(null);
   };
 
+  const filteredExpenses = expenses.filter(exp => {
+    const matchType = filterType === "All" || exp.expense_type === filterType;
+    
+    let matchDate = true;
+    if (dateFilter !== "All") {
+      const expDate = new Date(exp.expense_date);
+      const today = new Date();
+      const pastDate = new Date();
+      
+      if (dateFilter === "7days") pastDate.setDate(today.getDate() - 7);
+      else if (dateFilter === "30days") pastDate.setDate(today.getDate() - 30);
+      else if (dateFilter === "1year") pastDate.setFullYear(today.getFullYear() - 1);
+      
+      matchDate = expDate >= pastDate;
+    }
+
+    return matchType && matchDate;
+  });
+
   const chartData = Object.entries(
-    expenses.reduce((acc, exp) => {
+    filteredExpenses.reduce((acc, exp) => {
       acc[exp.expense_type] = (acc[exp.expense_type] || 0) + parseFloat(exp.amount);
       return acc;
     }, {})
@@ -166,20 +226,115 @@ export default function CarDetailsPage() {
   };
 
   return (
-    <div className="centered-content" style={{ maxWidth: "1000px" }}>
+    <div className="car-details-root" style={{ width: "100%" }}>
+      <style>{`
+        .car-details-grid {
+          display: grid;
+          gap: 32px;
+          align-items: start;
+        }
+        .add-form-col { order: 1; }
+        .history-col { order: 2; }
+        .chart-col { order: 3; }
+
+        @media (min-width: 1200px) {
+          .car-details-grid.is-owner {
+            grid-template-columns: 320px minmax(0, 1fr) 300px;
+          }
+          .car-details-grid.not-owner {
+            grid-template-columns: minmax(0, 1fr) 300px;
+          }
+          .sticky-col {
+            position: sticky;
+            top: 24px;
+          }
+        }
+        @media (max-width: 1199px) {
+          .car-details-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+          }
+          .add-form-col, .chart-col, .history-col {
+            width: 100%;
+            max-width: 700px; 
+          }
+          .chart-col { order: 2; }
+          .history-col { order: 3; }
+          .sticky-col {
+            position: static;
+          }
+        }
+        .history-card-content {
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          align-items: flex-start;
+        }
+        .history-left {
+          flex: 1 1 auto;
+          min-width: 0; 
+        }
+        .history-right {
+          flex: 0 0 auto;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 12px;
+          min-height: 80px;
+          justify-content: space-between;
+        }
+        .image-viewer-close {
+          position: absolute;
+          top: -40px;
+          right: 0;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: #fff;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+          padding: 0;
+          box-shadow: none;
+        }
+        .image-viewer-close:hover {
+          background: var(--color-coral);
+          border-color: var(--color-coral);
+          transform: scale(1.1);
+        }
+        .expense-thumbnail {
+          width: 48px;
+          height: 48px;
+          object-fit: cover;
+          border-radius: 8px;
+          border: 1px solid var(--color-rose);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .expense-thumbnail:hover {
+          transform: scale(1.05);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+      `}</style>
+
       <Link to={isOwner ? `/${currentUserId}/garage` : `/search`} className="back-link">
         ← {isOwner ? "Back to Garage" : "Back to Search"}
       </Link>
 
-      <div className="car-details-header">
-        <h2 style={{ fontSize: "2.5rem", marginBottom: "32px" }}>Car Expenses</h2>
+      <div className="car-details-header" style={{ marginBottom: "32px", textAlign: "center" }}>
+        <h2 style={{ fontSize: "2.5rem", margin: 0 }}>Car Expenses</h2>
       </div>
 
-      <div className="car-details-wrapper" style={{ gridTemplateColumns: isOwner ? "350px 1fr" : "1fr" }}>
+      <div className={`car-details-grid ${isOwner ? 'is-owner' : 'not-owner'}`}>
+        
         {isOwner && (
-          <div className="card" style={{ height: "fit-content" }}>
-            <h3 className="add-car-title">Add New Expense</h3>
-            <form onSubmit={handleAddExpense} className="column-form">
+          <div className="card sticky-col add-form-col" style={{ margin: 0 }}>
+            <h3 className="add-car-title">Add New</h3>
+            <form onSubmit={handleAddExpense} className="column-form" style={{ maxWidth: "100%" }}>
               <select value={expenseType} onChange={(e) => setExpenseType(e.target.value)} required>
                 <option value="Fuel">Fuel</option>
                 <option value="Service">Service</option>
@@ -191,24 +346,127 @@ export default function CarDetailsPage() {
               <input type="text" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
               <input type="date" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} required />
               <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "8px 0" }}>
-                <input type="checkbox" id="isPublic" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} style={{ width: "auto" }} />
-                <label htmlFor="isPublic">Make Public</label>
+                <input type="checkbox" id="isPublic" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} style={{ width: "auto", margin: 0 }} />
+                <label htmlFor="isPublic" style={{ fontSize: "0.9rem" }}>Make Public</label>
               </div>
               <div className="file-input-wrapper">
                 <input type="file" id="receipt-upload" accept="image/*" onChange={(e) => handleFileChange(e)} />
-                <label htmlFor="receipt-upload" className="file-input-button">{receipt ? "Change Image" : "Upload Receipt"}</label>
+                <label htmlFor="receipt-upload" className="file-input-button">{receipt ? "Change Image" : "Upload Attachment"}</label>
               </div>
-              {preview && <div className="image-preview-container"><img src={preview} className="image-preview" /><button type="button" className="remove-image-btn" onClick={() => { setReceipt(null); setPreview(null); }}>✕</button></div>}
+              {preview && (
+                <div className="image-preview-container">
+                  <img src={preview} className="image-preview" />
+                  <button type="button" className="remove-image-btn" onClick={() => { setReceipt(null); setPreview(null); }}>✕</button>
+                </div>
+              )}
               <button type="submit" disabled={isLoading}>{isLoading ? "Adding..." : "Add Expense"}</button>
             </form>
           </div>
         )}
 
-        <div className="expense-content-right">
-          {expenses.length > 0 && (
-            <div className="card" style={{ padding: "24px", marginBottom: "24px", background: "var(--color-plum)" }}>
-              <h3 style={{ margin: "0 0 16px 0", fontSize: "1.2rem" }}>Breakdown</h3>
-              <div style={{ width: "100%", height: "250px" }}>
+        <div className="expense-history-section history-col" style={{ minWidth: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
+            <h3 style={{ color: "var(--color-coral)", fontSize: "1.5rem", margin: 0 }}>History</h3>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <select 
+                value={dateFilter} 
+                onChange={(e) => setDateFilter(e.target.value)}
+                style={{ width: "auto", padding: "8px 32px 8px 12px", fontSize: "0.9rem", minWidth: "120px" }}
+              >
+                <option value="All">All Time</option>
+                <option value="7days">Last 7 Days</option>
+                <option value="30days">Last 30 Days</option>
+                <option value="1year">Last Year</option>
+              </select>
+              <select 
+                value={filterType} 
+                onChange={(e) => setFilterType(e.target.value)}
+                style={{ width: "auto", padding: "8px 32px 8px 12px", fontSize: "0.9rem", minWidth: "120px" }}
+              >
+                <option value="All">All Types</option>
+                <option value="Fuel">Fuel</option>
+                <option value="Service">Service</option>
+                <option value="Insurance">Insurance</option>
+                <option value="Parts">Parts</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="expense-history-list">
+            {filteredExpenses.length > 0 ? (
+              filteredExpenses.map((exp) => (
+                <div key={exp.id} className="expense-history-item history-card-content">
+                  <div className="history-left">
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "8px" }}>
+                      <span className="expense-type-badge">{exp.expense_type}</span>
+                      {!exp.is_public && <span style={{ fontSize: "0.75rem", color: "var(--color-gray)", whiteSpace: "nowrap" }}>(Private)</span>}
+                    </div>
+                    <p style={{ margin: "0 0 4px 0", fontWeight: "600", color: "var(--color-text)", fontSize: "1.05rem", wordBreak: "break-word" }}>
+                      {exp.description || "No description"}
+                    </p>
+                    <span style={{ fontSize: "0.85rem", color: "var(--color-gray)", display: "block" }}>
+                      {new Date(exp.expense_date).toLocaleDateString()}
+                    </span>
+                    
+                    {exp.image_url && (
+                      <div 
+                        style={{ marginTop: "12px", display: "inline-flex", alignItems: "center", gap: "12px", cursor: "pointer", background: "rgba(255,255,255,0.02)", padding: "4px 12px 4px 4px", borderRadius: "10px", border: "1px solid rgba(139, 66, 82, 0.2)" }}
+                        onClick={() => setViewingImage(`http://localhost:5000${exp.image_url}`)}
+                      >
+                        <img 
+                          src={`http://localhost:5000${exp.image_url}`} 
+                          alt="Thumbnail" 
+                          className="expense-thumbnail"
+                        />
+                        <span style={{ fontSize: "0.85rem", color: "var(--color-text)", display: "flex", alignItems: "center", gap: "6px", fontWeight: "500" }}>
+                          <PaperclipIcon /> Attachment
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="history-right">
+                    <div className="expense-amount-large" style={{ whiteSpace: "nowrap", fontSize: "1.1rem", fontWeight: "700" }}>
+                      {parseFloat(exp.amount).toFixed(2)} zł
+                    </div>
+                    
+                    {isOwner && (
+                      <div style={{ display: "flex", gap: "16px", marginTop: "auto" }}>
+                        <button 
+                          onClick={() => setEditingExpense(exp)} 
+                          style={{ background: "transparent", border: "none", color: "var(--color-gray)", padding: "4px", cursor: "pointer", width: "auto", boxShadow: "none" }}
+                          onMouseEnter={(e) => e.currentTarget.style.color = "#4ECDC4"} 
+                          onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-gray)"}
+                        >
+                          <PencilIcon />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteExpense(exp.id)} 
+                          style={{ background: "transparent", border: "none", color: "var(--color-gray)", padding: "4px", cursor: "pointer", width: "auto", boxShadow: "none" }}
+                          onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-coral)"} 
+                          onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-gray)"}
+                        >
+                          <TrashIcon />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ textAlign: "center", padding: "40px", color: "var(--color-gray)", background: "rgba(0,0,0,0.1)", borderRadius: "12px" }}>
+                No expenses found for this filter.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="sticky-col chart-col">
+          {filteredExpenses.length > 0 && (
+            <div className="card" style={{ margin: 0, padding: "24px" }}>
+              <h3 style={{ margin: "0 0 16px 0", fontSize: "1.2rem", textAlign: "center" }}>Breakdown</h3>
+              <div style={{ width: "100%", height: "250px", overflow: "hidden" }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none" isAnimationActive={false}>
@@ -221,43 +479,27 @@ export default function CarDetailsPage() {
               </div>
             </div>
           )}
-
-          <div className="expense-history-section">
-            <h3 style={{ color: "var(--color-coral)", fontSize: "1.5rem", marginBottom: "24px" }}>History</h3>
-            <div className="expense-history-list">
-              {expenses.map((exp) => (
-                <div key={exp.id} className="expense-history-item">
-                  <div className="expense-info">
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span className="expense-type-badge">{exp.expense_type}</span>
-                      {!exp.is_public && <span style={{ fontSize: "0.8rem", color: "var(--color-gray)" }}>(Private)</span>}
-                    </div>
-                    <p style={{ margin: "8px 0 4px 0", fontWeight: "500" }}>{exp.description}</p>
-                    <span style={{ fontSize: "0.85rem", color: "var(--color-gray)" }}>{new Date(exp.expense_date).toLocaleDateString()}</span>
-                    
-                    <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
-                      {exp.image_url && <a href={`http://localhost:5000${exp.image_url}`} target="_blank" className="expense-image-btn" style={{fontSize: '0.8rem'}}>🖼️ Receipt</a>}
-                      {isOwner && (
-                        <>
-                          <button onClick={() => setEditingExpense(exp)} style={{ background: "none", border: "none", color: "var(--color-gray)", cursor: "pointer", fontSize: "0.8rem" }}>✏️ Edit</button>
-                          <button onClick={() => handleDeleteExpense(exp.id)} style={{ background: "none", border: "none", color: "var(--color-coral)", cursor: "pointer", fontSize: "0.8rem" }}>🗑️ Remove</button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="expense-amount-large">{parseFloat(exp.amount).toFixed(2)} zł</div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
+
       </div>
 
       {editingExpense && (
         <div className="modal-overlay">
-          <div className="modal-content card" style={{ maxWidth: "450px", width: "90%" }}>
-            <h3>Edit Expense</h3>
-            <form onSubmit={handleUpdateExpense} className="column-form">
+          <div className="modal-content card" style={{ maxWidth: "450px", width: "90%", padding: "24px", margin: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+              <h3 style={{ margin: 0, fontSize: "1.5rem" }}>Edit Expense</h3>
+              <button 
+                type="button" 
+                onClick={() => setEditingExpense(null)} 
+                style={{ background: "transparent", border: "none", color: "var(--color-gray)", padding: 0, cursor: "pointer", width: "auto", boxShadow: "none" }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "var(--color-coral)"} 
+                onMouseLeave={(e) => e.currentTarget.style.color = "var(--color-gray)"}
+              >
+                <XIcon />
+              </button>
+            </div>
+            
+            <form onSubmit={handleUpdateExpense} className="column-form" style={{ maxWidth: "100%" }}>
               <select value={editingExpense.expense_type} onChange={(e) => setEditingExpense({...editingExpense, expense_type: e.target.value})}>
                 <option value="Fuel">Fuel</option>
                 <option value="Service">Service</option>
@@ -270,13 +512,13 @@ export default function CarDetailsPage() {
               <input type="date" value={editingExpense.expense_date.split('T')[0]} onChange={(e) => setEditingExpense({...editingExpense, expense_date: e.target.value})} required />
               
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <input type="checkbox" checked={editingExpense.is_public} onChange={(e) => setEditingExpense({...editingExpense, is_public: e.target.checked})} style={{ width: "auto" }} />
+                <input type="checkbox" checked={editingExpense.is_public} onChange={(e) => setEditingExpense({...editingExpense, is_public: e.target.checked})} style={{ width: "auto", margin: 0 }} />
                 <label>Make Public</label>
               </div>
 
               <div className="file-input-wrapper">
                 <input type="file" id="edit-receipt" accept="image/*" onChange={(e) => handleFileChange(e, true)} />
-                <label htmlFor="edit-receipt" className="file-input-button">Replace Receipt Image</label>
+                <label htmlFor="edit-receipt" className="file-input-button">Replace Attachment</label>
               </div>
 
               {(editingExpense.preview || editingExpense.image_url) && (
@@ -285,11 +527,31 @@ export default function CarDetailsPage() {
                 </div>
               )}
 
-              <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-                <button type="submit" style={{ flex: 1 }}>Save Changes</button>
-                <button type="button" onClick={() => setEditingExpense(null)} style={{ flex: 1, background: "var(--color-bg)", border: "1px solid var(--color-gray)" }}>Cancel</button>
-              </div>
+              <button type="submit" style={{ width: "100%", marginTop: "16px" }}>Save Changes</button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {viewingImage && (
+        <div className="modal-overlay" onClick={() => setViewingImage(null)} style={{ zIndex: 10000 }}>
+          <div 
+            className="modal-content" 
+            style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh", display: "flex", justifyContent: "center", alignItems: "center", background: "transparent", border: "none", padding: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              type="button" 
+              className="image-viewer-close"
+              onClick={() => setViewingImage(null)} 
+            >
+              <XIcon />
+            </button>
+            <img 
+              src={viewingImage} 
+              alt="Attachment Full Size" 
+              style={{ maxWidth: "100%", maxHeight: "85vh", borderRadius: "12px", objectFit: "contain", background: "var(--color-navy)", border: "1px solid rgba(139, 66, 82, 0.5)", boxShadow: "0 24px 48px rgba(0,0,0,0.5)" }} 
+            />
           </div>
         </div>
       )}
