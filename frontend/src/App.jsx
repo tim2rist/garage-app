@@ -91,10 +91,7 @@ export default function App() {
           </nav>
 
           <div className="sidebar-footer">
-            <button 
-              className="theme-toggle-btn icon-only-btn" 
-              onClick={() => setIsDark(!isDark)}
-            >
+            <button className="theme-toggle-btn icon-only-btn" onClick={() => setIsDark(!isDark)}>
               {isDark ? <SunIcon /> : <MoonIcon />}
             </button>
             <button className="logout-btn icon-only-btn" onClick={handleLogout}>
@@ -120,33 +117,33 @@ export default function App() {
       {!isHomePage && (
         <nav className="bottom-nav">
           {currentUserId !== "user" && (
-            <Link to={`/profile/${currentUserId}`}>
+            <Link to={`/profile/${currentUserId}`} className="mobile-nav-item">
               <ProfileIcon />
               <span>Profile</span>
             </Link>
           )}
           
-          <Link to={`/${currentUserId}/garage`}>
+          <Link to={`/${currentUserId}/garage`} className="mobile-nav-item">
             <GarageIcon />
             <span>Garage</span>
           </Link>
           
-          <Link to="/search">
+          <Link to="/search" className="mobile-nav-item">
             <SearchIcon />
             <span>Search</span>
           </Link>
 
-          <Link to="/settings">
+          <Link to="/settings" className="mobile-nav-item">
             <SettingsIcon />
             <span>Settings</span>
           </Link>
           
-          <button className="mobile-icon-btn" onClick={() => setIsDark(!isDark)}>
+          <button className="mobile-nav-item" onClick={() => setIsDark(!isDark)}>
             {isDark ? <SunIcon /> : <MoonIcon />}
             <span>Theme</span>
           </button>
           
-          <button className="mobile-icon-btn" onClick={handleLogout}>
+          <button className="mobile-nav-item" onClick={handleLogout}>
             <LogoutIcon />
             <span>Exit</span>
           </button>

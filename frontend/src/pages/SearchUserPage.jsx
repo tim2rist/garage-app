@@ -24,7 +24,6 @@ export default function SearchUserPage() {
   async function handleSearch(e) {
     e.preventDefault();
     if (!searchTerm.trim()) return;
-
     setIsSearching(true);
     setHasSearched(true);
 
@@ -45,10 +44,10 @@ export default function SearchUserPage() {
   }
 
   return (
-    <div className="search-page">
-      <div className="search-header">
-        <h2>Search Users</h2>
-        <p>Find other car enthusiasts by their User ID</p>
+    <div className="container search-page">
+      <div className="search-header" style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <h2 style={{ fontSize: '2rem', margin: 0 }}>Community</h2>
+        <p style={{ color: 'var(--color-gray)', marginTop: '4px' }}>Search for other garage owners</p>
       </div>
 
       <form onSubmit={handleSearch} className="search-box">
@@ -56,39 +55,47 @@ export default function SearchUserPage() {
           <SearchIcon />
           <input
             type="text"
-            placeholder="Enter User ID..."
+            placeholder="User ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             required
           />
         </div>
         <button type="submit" disabled={isSearching} className="search-btn">
-          {isSearching ? "Searching..." : "Search"}
+          {isSearching ? "..." : "Find"}
         </button>
       </form>
 
       {hasSearched && (
         <div className="search-results">
           {users.length > 0 ? (
-            <div className="users-grid">
+            <div className="users-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {users.map((user) => (
-                <div key={user.public_user_id} className="user-card">
-                  <div className="user-card-avatar">
-                    <UserIcon />
+                <div key={user.public_user_id} className="card flicker-in" style={{ padding: '16px', textAlign: 'center', margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ 
+                    width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(226, 104, 88, 0.1)', 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', overflow: 'hidden' 
+                  }}>
+                    {user.avatar_url ? (
+                      <img src={`http://localhost:5000${user.avatar_url}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <UserIcon />
+                    )}
                   </div>
-                  <div className="user-card-info">
-                    <h3>{user.public_user_id}</h3>
-                    <span className="user-role">Public Profile</span>
-                  </div>
-                  <Link to={`/profile/${user.public_user_id}`} className="view-profile-btn">
-                    View Garage
+                  <h3 style={{ fontSize: '1rem', margin: '0 0 4px 0', color: 'var(--color-text)', wordBreak: 'break-all' }}>{user.public_user_id}</h3>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--color-gray)', marginBottom: '16px', display: 'block' }}>Enthusiast</span>
+                  <Link to={`/profile/${user.public_user_id}`} style={{ 
+                    textDecoration: 'none', background: 'var(--color-coral)', color: '#fff', 
+                    padding: '8px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '700', width: '100%' 
+                  }}>
+                    Garage
                   </Link>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="empty-state">
-              <p>No users found matching "{searchTerm}"</p>
+            <div style={{ textAlign: 'center', color: 'var(--color-gray)', padding: '40px 0' }}>
+              No owners found with that ID
             </div>
           )}
         </div>
