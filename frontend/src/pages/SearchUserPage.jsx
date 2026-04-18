@@ -28,7 +28,7 @@ export default function SearchUserPage() {
     setHasSearched(true);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/profile/search/${searchTerm}`);
+      const res = await fetch(`https://garage-app-8r7w.onrender.com/api/profile/search/${searchTerm}`);
       if (res.ok) {
         const data = await res.json();
         setUsers(data);
@@ -77,7 +77,7 @@ export default function SearchUserPage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px', overflow: 'hidden' 
                   }}>
                     {user.avatar_url ? (
-                      <img src={`http://localhost:5000${user.avatar_url}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={`https://garage-app-8r7w.onrender.com${user.avatar_url}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <UserIcon />
                     )}

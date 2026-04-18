@@ -79,7 +79,7 @@ export default function CarDetailsPage() {
   const fetchExpenses = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`http://localhost:5000/api/expenses/${carId}`, {
+      const response = await fetch(`https://garage-app-8r7w.onrender.com/api/expenses/${carId}`, {
         headers: token ? { "Authorization": `Bearer ${token}` } : {}
       });
       if (response.ok) {
@@ -118,7 +118,7 @@ export default function CarDetailsPage() {
     if (receipt) formData.append("receipt", receipt);
 
     try {
-      const response = await fetch("http://localhost:5000/api/expenses", {
+      const response = await fetch("https://garage-app-8r7w.onrender.com/api/expenses", {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData
@@ -148,7 +148,7 @@ export default function CarDetailsPage() {
     if (editingExpense.newReceipt) formData.append("receipt", editingExpense.newReceipt);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/expenses/${editingExpense.id}`, {
+      const response = await fetch(`https://garage-app-8r7w.onrender.com/api/expenses/${editingExpense.id}`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData
@@ -169,7 +169,7 @@ export default function CarDetailsPage() {
     if (!window.confirm("Delete this expense?")) return;
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:5000/api/expenses/${id}`, {
+      const res = await fetch(`https://garage-app-8r7w.onrender.com/api/expenses/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -412,10 +412,10 @@ export default function CarDetailsPage() {
                     {exp.image_url && (
                       <div 
                         style={{ marginTop: "12px", display: "inline-flex", alignItems: "center", gap: "12px", cursor: "pointer", background: "rgba(255,255,255,0.02)", padding: "4px 12px 4px 4px", borderRadius: "10px", border: "1px solid rgba(139, 66, 82, 0.2)" }}
-                        onClick={() => setViewingImage(`http://localhost:5000${exp.image_url}`)}
+                        onClick={() => setViewingImage(`https://garage-app-8r7w.onrender.com${exp.image_url}`)}
                       >
                         <img 
-                          src={`http://localhost:5000${exp.image_url}`} 
+                          src={`https://garage-app-8r7w.onrender.com${exp.image_url}`} 
                           alt="Thumbnail" 
                           className="expense-thumbnail"
                         />

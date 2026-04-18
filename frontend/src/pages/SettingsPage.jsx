@@ -19,14 +19,14 @@ export default function SettingsPage() {
   const fetchProfile = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:5000/api/settings/me", {
+      const res = await fetch("https://garage-app-8r7w.onrender.com/api/settings/me", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
         setPublicId(data.public_user_id);
         if (data.avatar_url) {
-          setAvatarPreview(`http://localhost:5000${data.avatar_url}`);
+          setAvatarPreview(`https://garage-app-8r7w.onrender.com${data.avatar_url}`);
         }
       }
     } catch (err) {
@@ -52,7 +52,7 @@ export default function SettingsPage() {
     if (avatarFile) formData.append("avatar", avatarFile);
 
     try {
-      const res = await fetch("http://localhost:5000/api/settings/profile", {
+      const res = await fetch("https://garage-app-8r7w.onrender.com/api/settings/profile", {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData
@@ -74,7 +74,7 @@ export default function SettingsPage() {
     setPassMsg({ text: "", type: "" });
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:5000/api/settings/password", {
+      const res = await fetch("https://garage-app-8r7w.onrender.com/api/settings/password", {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
