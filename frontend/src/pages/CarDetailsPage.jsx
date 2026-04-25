@@ -523,7 +523,7 @@ export default function CarDetailsPage() {
 
               {(editingExpense.preview || editingExpense.image_url) && (
                 <div style={{ position: "relative", marginTop: "10px" }}>
-                  <img src={editingExpense.preview || `http://localhost:5000${editingExpense.image_url}`} style={{ width: "100%", borderRadius: "8px", height: "100px", objectFit: "cover" }} />
+                  <img src={editingExpense.preview || `https://garage-app-8r7w.onrender.com${editingExpense.image_url}`} style={{ width: "100%", borderRadius: "8px", height: "100px", objectFit: "cover" }} />
                 </div>
               )}
 

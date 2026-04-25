@@ -26,6 +26,7 @@ app.get("/api/health", async (req, res) => {
     const dbRes = await pool.query("SELECT NOW()");
     res.status(200).json({ status: "OK", time: dbRes.rows[0].now });
   } catch (error) {
+    console.error("REAL DB ERROR:", error);
     res.status(500).json({ error: "DB Error" });
   }
 });

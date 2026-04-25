@@ -9,13 +9,13 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const statsRes = await fetch(`http://localhost:5000/api/profile/stats/${publicUserId}`);
+        const statsRes = await fetch(`https://garage-app-8r7w.onrender.com/api/profile/stats/${publicUserId}`);
         if (statsRes.ok) {
           const statsData = await statsRes.json();
           setStats(statsData || { car_count: 0, total_expenses: 0, avatar_url: null });
         }
 
-        const carsRes = await fetch(`http://localhost:5000/api/profile/cars/${publicUserId}`);
+        const carsRes = await fetch(`https://garage-app-8r7w.onrender.com/api/profile/cars/${publicUserId}`);
         if (carsRes.ok) {
           const carsData = await carsRes.json();
           setCars(carsData || []);
@@ -33,7 +33,7 @@ export default function ProfilePage() {
         <div className="profile-avatar" style={{ overflow: "hidden", padding: 0 }}>
           {stats?.avatar_url ? (
             <img 
-              src={`http://localhost:5000${stats.avatar_url}`} 
+              src={`https://garage-app-8r7w.onrender.com${stats.avatar_url}`} 
               alt="Avatar" 
               style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} 
             />
